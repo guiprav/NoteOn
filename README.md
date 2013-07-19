@@ -1,4 +1,5 @@
 NoteOn
 ======
 
-JavaScriptable Music.
+JavaScriptable music.
+
