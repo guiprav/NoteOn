@@ -21,4 +21,6 @@ Current objectives:
   flatten them, though.
 * Fully-programmable. Graphical interfaces are not the focus right now.
 * Generate a canonical sequence of MIDI-like events that can be used to control synthesizers.
-* Bind to TSS chiptune emulators, for great justice.
+* Bind to [TSS][tss-readme]' chiptune emulators, for great justice.
+
+[tss-readme]: 3rdparty/tss
