@@ -47,11 +47,46 @@ function play (key, velocity, in_, duration)
 	setTimeout(key_off, in_ + duration);
 }
 
-play('C5', 100, 0, 1000);
-play('D5', 100, 1000, 1000);
-play('Eb5', 100, 2000, 1000);
-play('F5', 100, 3000, 1000);
-play('G5', 100, 4000, 1000);
-play('Ab5', 100, 5000, 1000);
-play('Bb5', 100, 6000, 1000);
+function play_sequence (sequence)
+{
+	sequence.forEach
+	(
+		function (element)
+		{
+			var key = element.key;
+			var velocity = element.velocity || 100;
+			var timing = element.timing;
+
+			play(key, velocity, timing[0], timing[1]);
+		}
+	);
+}
+
+var d = 200;
+
+var sequence =
+[
+	{ key: 'C5', timing: [d * 0, d] },
+	{ key: 'D5', timing: [d * 1, d] },
+	{ key: 'E5', timing: [d * 2, d] },
+	{ key: 'F5', timing: [d * 3, d] },
+	{ key: 'G5', timing: [d * 4, d] },
+	{ key: 'A5', timing: [d * 5, d] },
+	{ key: 'B5', timing: [d * 6, d] }
+];
+
+function zip_slot (sequence, slot, array)
+{
+	array.forEach
+	(
+		function (data, index)
+		{
+			sequence[index][slot] = data;
+		}
+	);
+
+	return sequence;
+}
+
+play_sequence(zip_slot(sequence, 'velocity', [100, 90, 80, 70, 60, 40, 30]));
 
