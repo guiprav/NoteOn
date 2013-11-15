@@ -90,3 +90,22 @@ function zip_slot (sequence, slot, array)
 
 play_sequence(zip_slot(sequence, 'velocity', [100, 90, 80, 70, 60, 40, 30]));
 
+require('repl').start({ prompt: '', input: process.stdin, output: process.stdout });
+
+require('keypress')(process.stdin);
+
+process.stdin.on
+(
+	'keypress', function (ch, key)
+	{
+		var indices = 'qwertyui';
+		var note_key_index = indices.indexOf(ch);
+
+		if (note_key_index !== -1)
+		{
+			var keys = ['C5', 'D5', 'Eb5', 'F5', 'G5', 'Ab5', 'Bb5'];
+			play(keys[note_key_index], 100, 0, 300);
+		}
+	}
+);
+
