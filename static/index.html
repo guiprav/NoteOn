@@ -1,0 +1,234 @@
+<!doctype html>
+<script src="/bundle.js"></script>
+<script>
+midi.note_on = function (note, velocity)
+{
+	midi.send(144, note, velocity);
+};
+
+midi.note_off = function (note, velocity)
+{
+	if (note !== 'all')
+	{
+		midi.send(128, note, velocity);
+	}
+	else
+	{
+		midi.silence_all(velocity);
+	}
+};
+
+midi.ktn = {}; // C8  == 108
+midi.ntk = {}; // 108 ==  C8
+(function () {
+        var A0 = 0x15; // first note
+        var C8 = 0x6C; // last note
+        var number2key = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
+        for (var n = A0; n <= C8; n++) {
+                var octave = (n - 12) / 12 >> 0;
+                var name = number2key[n % 12] + octave;
+                midi.ktn[name] = n;
+                midi.ntk[n] = name;
+        }
+})();
+
+midi.play = function (key_or_note, velocity, in_, duration)
+{
+	var note;
+
+	if (typeof key_or_note === 'string')
+	{
+		note = midi.ktn[key_or_note];
+	}
+	else
+	{
+		note = key_or_note;
+	}
+
+        var key_on = midi.note_on.bind(null, note, velocity);
+        var key_off = midi.note_off.bind(null, note, velocity);
+
+        if (in_ === 0)
+        {
+                key_on();
+        }
+        else
+        {
+                setTimeout(key_on, in_);
+        }
+
+        setTimeout(key_off, in_ + duration);
+}
+
+midi.on
+(
+	'ready', function ()
+	{
+	}
+);
+
+domready
+(
+	function ()
+	{
+		var editor = ace.edit('editor');
+
+		editor.setTheme('ace/theme/monokai');
+		editor.getSession().setMode('ace/mode/javascript');
+
+		$('#editor').keydown
+		(
+			function (event)
+			{
+				if ((event.keyCode === 10 || event.keyCode === 13) && event.ctrlKey)
+				{
+					eval(editor.getValue());
+				}
+			}
+		);
+	}
+);
+</script>
+<script src="/ace-builds/src-noconflict/ace.js" charset="utf-8"></script>
+<script src="http://code.jquery.com/jquery-2.0.3.js"></script>
+<div id="editor"><![CDATA[Array.prototype.play = function (commons)
+{
+    commons = commons || {};
+    
+    if (!commons.velocity) commons.velocity = 127;
+    if (!commons.duration) commons.duration = 50;
+    
+    this.forEach
+    (
+        function (element, index)
+        {
+            var data = {};
+            
+            switch (typeof element)
+            {
+                case 'number':
+                case 'string':
+                    data.key_or_note = element;
+                    break;
+
+                default:
+                    data = element;
+                    break;
+            }
+
+            if (!data.velocity) data.velocity = commons.velocity;
+
+            midi.play(data.key_or_note, data.velocity, index * commons.duration, commons.duration);
+        }
+    );
+
+    return this;
+};
+
+var major_scale = cycle([2, 2, 1, 2, 2, 2, 1]);
+var natural_minor_scale = cycle([2, 1, 2, 2, 1, 2, 2]);
+var jazz_minor_scale = cycle([2, 1, 2, 2, 2, 2, 2]);
+
+function cycle (array)
+{
+    return new Proxy
+    (
+        array,
+        {
+            get: function (target, name)
+            {
+                if (!name.match(/^[+\-]?[1-9][0-9]*$/))
+                {
+                    return array[name];
+                }
+
+                var index = parseInt(name);
+                
+                if (index >= 0)
+                {
+                    return array[index % array.length];
+                }
+                else
+                {
+                    return array[(array.length - 1) + ((index + 1) % array.length)];
+                }
+            }
+        }
+    );
+}
+
+function add_scale (scale)
+{
+    return function (interval)
+    {
+        var i, result = 0;
+        
+        console.log('interval:', interval);
+        
+        if (interval < 0)
+        {
+            console.log('< 0');
+            for (i = 1; i <= Math.abs(interval); ++i)
+            {
+                var step = scale[-i];
+                console.log(-i, -step);
+                result -= step;
+            }
+        }
+        else
+        if (interval > 0)
+        {
+            console.log('> 0');
+            for (i = 0; i < interval; ++i)
+            {
+                console.log(i, scale[i]);
+                result += scale[i];
+            }
+        }
+        else
+        {
+            console.log('= 0');
+            result = interval;
+        }
+        
+        console.log('result:', result);
+
+        return result;
+    };
+}
+
+function add_tonic (tonic)
+{
+	return function (note)
+	{
+		return note + tonic;
+	};
+}
+
+function note_to_key (note)
+{
+    return midi.ntk[note];
+}
+
+var ff7 = [1, 1, 0, 2, 3, 3, 2];
+
+console.log
+(
+    [-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9]
+        .map(add_scale(major_scale))
+        .map(add_tonic(midi.ktn.C5))
+        .play()
+        .map(note_to_key)
+);
+]]></div>
+<style type="text/css" media="screen">
+#editor
+{ 
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+}
+</style>
+
