@@ -1,72 +1,19 @@
 <!doctype html>
 <script src="/bundle.js"></script>
 <script>
-midi.note_on = function (note, velocity)
-{
-	midi.send(144, note, velocity);
-};
-
-midi.note_off = function (note, velocity)
-{
-	if (note !== 'all')
-	{
-		midi.send(128, note, velocity);
-	}
-	else
-	{
-		midi.silence_all(velocity);
-	}
-};
-
 midi.ktn = {}; // C8  == 108
 midi.ntk = {}; // 108 ==  C8
-(function () {
-        var A0 = 0x15; // first note
-        var C8 = 0x6C; // last note
-        var number2key = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
-        for (var n = A0; n <= C8; n++) {
-                var octave = (n - 12) / 12 >> 0;
-                var name = number2key[n % 12] + octave;
-                midi.ktn[name] = n;
-                midi.ntk[n] = name;
-        }
+(function() {
+	var A0 = 0x15;
+	var C8 = 0x6C;
+	var number_to_key = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
+	for(var i = A0; i <= C8; ++i) {
+		var octave = (i - 12) / 12 >> 0;
+		var name = number_to_key[i % 12] + octave;
+		midi.ktn[name] = i;
+		midi.ntk[i] = name;
+	}
 })();
-
-midi.play = function (key_or_note, velocity, in_, duration)
-{
-	var note;
-
-	if (typeof key_or_note === 'string')
-	{
-		note = midi.ktn[key_or_note];
-	}
-	else
-	{
-		note = key_or_note;
-	}
-
-        var key_on = midi.note_on.bind(null, note, velocity);
-        var key_off = midi.note_off.bind(null, note, velocity);
-
-        if (in_ === 0)
-        {
-                key_on();
-        }
-        else
-        {
-                setTimeout(key_on, in_);
-        }
-
-        setTimeout(key_off, in_ + duration);
-}
-
-midi.on
-(
-	'ready', function ()
-	{
-	}
-);
-
 domready
 (
 	function ()
@@ -91,17 +38,15 @@ domready
 </script>
 <script src="/ace-builds/src-noconflict/ace.js" charset="utf-8"></script>
 <script src="http://code.jquery.com/jquery-2.0.3.js"></script>
-<div id="editor">Array.prototype.play = function (commons)
-{
+<div id="editor">Array.prototype.play = function(commons) {
     commons = commons || {};
-    
-    if (!commons.velocity) commons.velocity = 127;
-    if (!commons.duration) commons.duration = 80;
-    
-    this.forEach
-    (
-        function (element, index)
-        {
+	if(commons.moment === undefined) {
+		throw new Error("Missing commons.moment.");
+	}
+    if(!commons.velocity) commons.velocity = 127;
+    if(!commons.duration) commons.duration = 80;
+    this.forEach (
+        function(element, index) {
             var data = {};
             
             switch (typeof element)
